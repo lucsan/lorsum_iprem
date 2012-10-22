@@ -10,11 +10,23 @@ function lorsum_iprem_menu() {
   $items['lorsum_iprem'] = array(
     'title' => 'Lorsum Iprem',
     'page callback' => 'lorsum_iprem_draw_page',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access lorsum_iprem'),
     'type' => MENU_NORMAL_ITEM,
     );
   
   return $items;
+}
+
+/**
+ * Implementation of hook_permission()
+ */
+function lorsum_iprem_permission() {
+  return array(
+    'access lorsum_iprem' => array(
+      'title' => t('Lorsum Iprem access'),
+      'description' => t('Allow users to use Lorsum Iprem'),
+    ),
+  );
 }
 
   /*
@@ -285,5 +297,7 @@ function _get_worldlist($filename) {
   }
   return $array;
 }
+
+
 
 
