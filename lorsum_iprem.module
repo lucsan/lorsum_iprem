@@ -1,0 +1,289 @@
+<?php
+
+error_reporting(E_ALL);
+
+/**
+ * Implementation of hook_menu().
+ */
+function lorsum_iprem_menu() {
+
+  $items['lorsum_iprem'] = array(
+    'title' => 'Lorsum Iprem',
+    'page callback' => 'lorsum_iprem_draw_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+    );
+  
+  return $items;
+}
+
+  /*
+  choice of lorums, lukums, swearums etc
+  ability to add own lorum
+  make available to page edit (maybe wysywig editor?)
+  
+  hook_alter into node forms and add ajax widget to each text field
+  
+  add to user form the ability to change the lorum output (ie: lorsum, lucsum, gagoga etc
+  
+  */
+
+function lorsum_iprem_draw_page() {
+  $form = drupal_get_form('lorsum_iprem_form');
+  $data = _get_worldlist($form['lorsum_iprem']['select']['#value']);
+  
+  return drupal_render($form) . _compose($data);
+}
+
+function lorsum_iprem_form($form, &$form_state) {
+  $default_value = 'lorsum_iprem.txt';
+
+  $files = scandir(getcwd() . '/' . drupal_get_path('module', 'lorsum_iprem') . '/texts/');
+  $list = array();
+  foreach ($files as $file) {
+    $values = explode('.', $file);
+    if (count($values) == 2 && $values[0] != '' && $values[1] == 'txt') {
+      $titles = explode('_', $values[0]);
+      $title = '';
+      foreach ($titles as $part) {
+        $title .= $part . ' ';
+      }
+      $title = ucwords(trim($title));
+      $list[$file] = $title;
+      if (isset($form_state['input']['select']) && $file == $form_state['input']['select']) {
+        $default_value = $file;
+      }
+    }
+  }
+  
+
+  
+  $options = $list;
+  $form['lorsum_iprem']['select'] = array(
+    '#type' => 'select',
+    '#title' => t('Choose a word list'),
+    '#options' => $options, //drupal_map_assoc($options), // drupal_map_assoc will key the array
+    '#value' => $default_value, // note: this is dictated by the key of the array - use array_keys();
+    '#attributes' => array('onchange'=>'document.lorsum_iprem-form.submit();'), // note: this must be the id of the form
+    '#description' => t('Select a .txt word list from the list.'),
+  );
+
+  return $form;
+}
+
+
+function _compose($data) {
+  $line = '';
+  $word_length = 100;
+  $intro = isset($data['intro'])? $data['intro']: null;
+  if ($intro) {
+    foreach( $intro as $word) {
+      $line .= $word . ' ';
+    }
+    $line = substr($line, 0, strlen($line) - 1);
+    $line = ucfirst($line) . '.';
+  } else {
+    $line = _compose_line($data);
+  }
+  
+  while(str_word_count($line) < $word_length) {
+    $line = $line . ' ' . _compose_line($data);
+  }
+  
+  //print $line;
+  return $line;
+}
+
+
+function _compose_line($data) {
+  $line = '';
+  $line = _compose_phrase($data);
+  $conjunctions = isset($data['conjunctions'])? $data['conjunctions']: array();
+  $conjunctions[] = ',';
+
+  while(_chance_of(50)) {
+    $join = _which_next($conjunctions);
+    if ($join != ',') $join = ' ' . $join .',';
+    $line = $line . $join . ' ' . _compose_phrase($data);
+  }
+  $line .= '.';
+  return ucfirst($line);
+}
+
+function _compose_phrase($data) {
+    //extract($data);
+    $line = '';
+    $nouns = isset($data['nouns'])? $data['nouns']: null;
+    $verbs = isset($data['verbs'])? $data['verbs']: null;
+    $adverbs = isset($data['adverbs'])? $data['adverbs']: null;
+    $pronouns = isset($data['pronouns'])? $data['pronouns']: null;
+    $positions = isset($data['positions'])? $data['positions']: null;
+    $new_adverbs = _build_adverbs($data);
+    $data['new_adverbs'] = $new_adverbs;
+    
+    
+    
+    if (count($nouns) < 1) {$nouns[] = 'bicka';}
+    if (count($verbs) < 1) {$verbs[] = 'sayt';}
+    
+    $noun = _which_next($nouns);
+    if (_chance_of(30)) {
+      $noun_prefix = _which_next($data['noun_prefixs']);
+      $noun = _prefix_rules($noun, $noun_prefix);
+    }
+    
+    if (_chance_of(100)) {
+      $noun_suffix = _which_next($data['noun_suffixs']);
+      $noun = _suffix_rules($noun, $noun_suffix);
+    }
+    
+    $noun = _pluralise($noun, $data);
+    
+    $verb = _which_next($verbs);
+    $suffix = _which_next($data['verb_suffixs']);
+    $verb = _suffix_rules($verb, $suffix);
+    
+    $verb_join = _which_next($data['noun_verb_join']);
+    
+    $choices = array();
+    if($new_adverbs) $choices[] = 'new_adverbs';
+    if($positions) $choices[] = 'positions';
+    if($pronouns) $choices[] = 'pronouns';
+    
+    if(count($choices) < 1) $choices[] = 'noun';
+    $i = mt_rand(0, count($choices) - 1);
+    if (_chance_of(40)){$choice = 'noun';}
+    else{ $choice = $choices[$i];}
+    
+    if ($choice == 'noun') { 
+      $line = $noun . ' ' . _which_next($new_adverbs);
+    } elseif ($choice == 'positions') {
+      $word = _which_next($data[$choice]);
+      $line = $word . ' ' . $noun;
+    } else {
+      $word = _which_next($data[$choice]);
+      $line = $word . ' ' . $noun;
+    }
+    
+    $line .= ' ' . $verb_join . ' ' . $verb;
+    
+    return $line;
+}
+
+function _pluralise($noun, $data) {
+  
+  $adnouns = isset($data['adnouns'])? $data['adnouns']: null;
+  $plurals = isset($data['plurals'])? $data['plurals']: null;
+  $articles_singular = isset($data['articles_singular'])? $data['articles_singular']: null;
+  $articles_plural = isset($data['articles_plural'])? $data['articles_plural']: null;
+  
+  if(!$plurals || !$adnouns) return $noun;
+  
+  $adnoun = '';
+  if (_chance_of(40)) { $adnoun = _which_next($adnouns); }
+  
+  $second_adnoun = '';
+  if (_chance_of(20)) { $second_adnoun = _which_next($adnouns); }
+  
+  if (!_chance_of(60)) { // Chance this will be singular
+    $new_phrase = _which_next($articles_singular);
+    if ($adnoun) $new_phrase .= ' ' . $adnoun;
+    if ($second_adnoun && ($second_adnoun != $adnoun)) $new_phrase .= ' ' . $second_adnoun;
+    $new_phrase .= ' ' . $noun;
+    return $new_phrase;
+  }
+  $plural = _which_next($plurals);
+  $new_phrase = _which_next($articles_plural);
+  if ($adnoun) $new_phrase .= ' ' . $adnoun;
+  if ($second_adnoun && ($second_adnoun != $adnoun)) $new_phrase .= ' ' . $second_adnoun;
+  $new_phrase .= ' '. _suffix_rules($noun, $plural);
+  return $new_phrase;
+}
+
+function _build_adverbs($data) {
+  $new_adverbs = array();
+  $adverbs = isset($data['adverbs'])? $data['adverbs']: null;
+  $prefixs = isset($data['adverb_prefixs'])? $data['adverb_prefixs']: null;
+  $suffixs = isset($data['adverb_suffixs'])? $data['adverb_suffixs']: null;
+  if ($prefixs) {
+    foreach ($adverbs as $adverb) {
+      foreach ($prefixs as $prefix) {
+        $new_adverbs[] = _prefix_rules($adverb, $prefix);
+      }
+    }
+  }
+  if ($suffixs) {
+    foreach ($adverbs as $adverb) {
+      foreach ($suffixs as $suffix) {
+        $new_adverbs[] = _suffix_rules($adverb, $suffix);
+      }
+    }
+    
+  }
+  
+  if(!$prefixs && !$suffixs && $adverbs) $new_adverbs = $adverbs;
+  
+  return $new_adverbs;
+}
+
+function _suffix_rules($word, $suffix) {
+  if (!$suffix) return $word; // no suffix to add.
+  $new_word = '';
+  $wend = substr($word, strlen($word) - 1, 1 );
+  $sbeg = substr($suffix, 0, 1);
+  
+  $word_is_vowel = false;
+  $suffix_is_vowel = false;
+  if( $wend == 'a' || $wend == 'e' || $wend == 'i' || $wend == 'o' || $wend == 'u' || $wend == 'y') $word_is_vowel = true;
+  if( $sbeg == 'a' || $sbeg == 'e' || $sbeg == 'i' || $sbeg == 'o' || $sbeg == 'u') $suffix_is_vowel = true;
+  
+  if ($suffix_is_vowel && $word_is_vowel) {
+    $new_word = substr($word, 0, strlen($word) - 1) . $suffix;
+  }else{
+    if ($wend != $sbeg) {
+      $new_word = $word . $suffix;
+    } else {
+      $new_word = $word;
+    }
+    
+  }
+  return $new_word;
+}
+
+function _prefix_rules($word, $prefix) {
+  $wbeg = substr($word, 0, 1);
+  $pend = substr($prefix, strlen($prefix) - 1, 1 );
+  if ($wbeg == $pend) $word = substr($word, 1, strlen($word));
+  return $prefix . $word;
+}
+
+function _chance_of($percent) {
+  if ($percent >= mt_rand(0, 100)) return true;
+  return false;
+}
+
+function _which_next($array) {
+  if( count($array) < 1 ) return '';
+  return $array[mt_rand(0, count($array)-1)];
+}
+
+
+function _get_worldlist($filename) {
+  $lines = file(getcwd() . '/' . drupal_get_path('module', 'lorsum_iprem') . '/texts/' . $filename);
+
+  $array = array();
+  $type = '';
+  foreach ($lines as $line) {
+    if ($head = stristr($line, ':', true)) {
+      $array[$head] = array();
+      $type = $head;
+    }else{
+      $line = trim($line);
+      if($line)
+      $array[$type][] = $line;
+    }
+  }
+  return $array;
+}
+
+

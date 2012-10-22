@@ -1,0 +1,4 @@
+name = Lorsum Iprem
+description = "Customised Lorem Ipsum generator."
+package = Development
+core = 7.x
