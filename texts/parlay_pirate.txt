@@ -11,6 +11,7 @@ pieces-o-eight
 gold
 treasure
 ship
+boat
 sail
 cutlass
 parrot
@@ -31,11 +32,25 @@ fog
 crows nest
 barrel
 loot
+cabin
+chest
+skull n' crossbones
+timber
+gunpowder
+powder
+shot
+pistol
+dubloon
+necklace
+scurvy
+sea dog
+
 
 articles_singular:
 thar
-t
+t'
 she
+this old
 
 articles_plural:
 the
@@ -45,12 +60,15 @@ adnouns:
 large
 round
 red
+gold
 high
 
 plurals:
 s
+es
 
 pronouns:
+me
 thee
 thar
 she
@@ -81,6 +99,8 @@ capture
 take
 loot
 pillage
+avast
+shiver
 
 adverbs:
 high

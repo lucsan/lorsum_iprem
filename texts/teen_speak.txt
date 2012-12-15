@@ -7,6 +7,10 @@ nouns:
 music
 face
 junk
+stuff
+thing
+palm
+youth
 
 
 articles_singular:
