@@ -9,6 +9,11 @@ house
 kingdom
 statue
 Britans
+isle
+castle
+estate
+bulldog
+
 
 articles_singular:
 a
@@ -63,7 +68,6 @@ noun_prefixs:
 noun_suffixs:
 
 verbs:
-parlay
 shout
 sit
 eat
@@ -73,6 +77,7 @@ advise
 talk
 discuss
 wave
+
 
 adverbs:
 slow
@@ -85,6 +90,8 @@ before
 necessary
 fair
 right
+swift
+
 
 verb_prefixs:
 
@@ -92,6 +99,7 @@ verb_suffixs:
 ing
 s
 ed
+ish
 
 adverb_prefixs:
 un
