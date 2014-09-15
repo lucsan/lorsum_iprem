@@ -1,32 +1,46 @@
 intro:
-Base
-list
+Sithy
+t' words
 
 
 nouns:
-thing
-object
-box
+hat
+flat cap
+wenselydale
+cheese
+whippet
+Ilkley
+moor
+mine
+mill
+
 
 articles_singular:
 a
-the
+t'
 
 articles_plural:
-the
-many
+t'
+loads a
+plenty
+more un
 
 adnouns:
-large
+big'un
+small'un
 round
 red
+dark
+
 
 plurals:
 s
 
 pronouns:
-he
-she
+this'un
+that'un
+our lass
+our kid
 it
 
 noun_prefixs:
@@ -36,8 +50,9 @@ noun_suffixs:
 
 
 verbs:
-go
-do
+gan
+d'
+swift
 
 adverbs:
 high
@@ -50,8 +65,6 @@ verb_suffixs:
 ly
 ing
 ish
-ed
-s
 
 adverb_prefixs:
 
