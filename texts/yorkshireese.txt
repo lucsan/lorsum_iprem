@@ -4,7 +4,7 @@ t' words
 
 
 nouns:
-hat
+at
 flat cap
 wenselydale
 cheese
@@ -13,6 +13,7 @@ Ilkley
 moor
 mine
 mill
+duck
 
 
 articles_singular:
@@ -53,10 +54,13 @@ verbs:
 gan
 d'
 swift
+bar
+backwards
 
 adverbs:
 high
 fast
+
 
 verb_prefixs:
 un
